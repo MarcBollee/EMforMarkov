@@ -6,7 +6,7 @@ To obtain confidence intervals, the parametric bootstrap is used.
 This set of function was developed in [RStudio 2024.09.1 Build 394](https://posit.co/download/rstudio-desktop/), using [R 4.4.2](https://cran.r-project.org/bin/windows/base/).  
 In addition, the following libraries from the CRAN repository were used:  
 [Rcpp](https://cran.r-project.org/web/packages/Rcpp/index.html): For integrating C++ code.  
-[LaplacesDemon](https://cran.r-project.org/web/packages/LaplacesDemon/index.html): For its rdirichlet function which allows sampling of Dirichlet random variables. this function is not used in the scripts, but can be useful for generating random transition matrices to test the method on.
+[LaplacesDemon](https://cran.r-project.org/web/packages/LaplacesDemon/index.html): For its rdirichlet function which allows sampling of Dirichlet random variables. This function is not used in the scripts, but can be useful for generating random transition matrices to test the method on.
 
 # **File Descriptions**  
 ## **rMarkovCount.R**  
