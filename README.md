@@ -13,7 +13,7 @@ In addition, the following libraries from the CRAN repository were used:
 This contains a function which generates a random transition count matrix given an initial population vector, a transition probability matrix, and the number of time steps ellapsed.
 
 ## **EMforMarkov.R**  
-This file contains the function which performs the weigthed EM algorithm in R. The function takes a input a list (or array) of count matrices "C.all", and list of labels "S.all" for how many time steps is associated with each count matrix.  
+This file contains the function which performs the weigthed EM algorithm in R. The function takes as input a list (or array) of count matrices "C.all", and list of labels "S.all" for how many time steps is associated with each count matrix.  
 In addition, a set of weights "w" may be specified, otherwise uniform weights will be used.  
 "Forbidden" is matrix of binary values of the same size are the count matrices, where Forbidden[i,j]=TRUE means that the transition i->j is not allowed in 1 time step, and therefore the estimated transition probability will automatically be set to 0.  
 "precision" and "maxiteration" define the stoping criteria of the while loop that performs the EM algorithm.  
