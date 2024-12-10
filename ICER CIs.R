@@ -1,8 +1,15 @@
-library(Rcpp)
-sourceCpp("./CoreEM.cpp")
 #The purpose of this script is to test the weighted EM method to obtain a tighter confidence interval around a
-#fictional ICER value than the non-weighted EM method (Craig and Sendi)
+#fictional ICER value than the non-weighted EM method (Craig and Sendi).
+#This script requires the following functionsto be loaded:
+#EMforMarkov
+#BSCIforMarkov
+#CoreEM
+# library(Rcpp)
+# sourceCpp("./CoreEM.cpp")
+#AutoWforMarkov
+##################################################################### Define some Functions
 
+#Computes the ICER for a given transition probability matrix
 ICER<-function(M1.treatment){
   if(nrow(M1.treatment)!=3 || nrow(M1.treatment)!=3){
     print(M1.treatment)
@@ -102,7 +109,8 @@ CostBenefit<-function(M1.treatment){
   
   return(c(cost.treatment-cost.placebo,qaly.treatment-qaly.placebo))
 }
-#####################################################################Start of var(ICER) analysis
+
+##################################################################### Start of var(ICER) analysis
 #Declaring variables
 BSsamples<-5000
 M1.BS<-array(0,dim=c(BSsamples,3,3)) #bootstrapped transition probability matrices from bootstrapped count matrices without weighting
@@ -127,13 +135,13 @@ Trans2step<-rMarkovCount(M=M1,s=2,rowTotals=Counts[2,])
 Trans3step<-rMarkovCount(M=M1,s=3,rowTotals=Counts[3,])
 
 #Use bootstrapping to find the weighting that minimises the variance of the ICER
-w<-GEMforMarkov6AutoW2(Trans1step,Trans2step,Trans3step,ObjFunc = ICER, verbose=T, Forbidden = matrix(c(F,F,F,F,F,F,T,T,F),3,3,byrow=T), Counts=Counts, BSsamples=BSsamples)[[2]]
+w<-AutoWforMarkov(Trans1step,Trans2step,Trans3step,ObjFunc = ICER, verbose=T, Forbidden = matrix(c(F,F,F,F,F,F,T,T,F),3,3,byrow=T), Counts=Counts, BSsamples=BSsamples)[[2]]
 
 #Do a final bootstrap comparison between weighted and non-weighted
 set.seed(271828)
-M1.BS<-BSCIforMarkovCpp(C.all=list(Trans1step,Trans2step,Trans3step), S.all=c(1,2,3),BSsamples=BSsamples,returnBS=T,w=rep(1/3,3), Counts=Counts)
+M1.BS<-BSCIforMarkov(C.all=list(Trans1step,Trans2step,Trans3step), S.all=c(1,2,3),BSsamples=BSsamples,returnBS=T,w=rep(1/3,3), Counts=Counts)
 set.seed(271828)
-M1w.BS<-BSCIforMarkovCpp(C.all=list(Trans1step,Trans2step,Trans3step), S.all=c(1,2,3),BSsamples=BSsamples,returnBS=T,w=w, Counts=Counts)
+M1w.BS<-BSCIforMarkov(C.all=list(Trans1step,Trans2step,Trans3step), S.all=c(1,2,3),BSsamples=BSsamples,returnBS=T,w=w, Counts=Counts)
 
 for(b in 1:BSsamples){
   #Run a cost benefit analysis with using the bootstrapped transition probability matrices
@@ -171,9 +179,13 @@ lines(x=c(0,WTP),y=rep(CEA[which(WTP.seq==WTP),1],2),lty=2,col="blue")
 lines(x=c(0,WTP),y=rep(CEA[which(WTP.seq==WTP),2],2),lty=2,col="red")
 axis(side=2,at=round(CEA[which(WTP.seq==WTP),1],2),col="blue",col.axis="blue",las=1,cex.axis=1.1)
 axis(side=2,at=round(CEA[which(WTP.seq==WTP),2],2),col="red",col.axis="red",las=1,cex.axis=1.1)
-################################################### 
+
+
+
+
+##################################################################### Variance over entire simplex
 #Graph of the variance of the ICER over the 3-simplex of possible weights
-set.seed(31415)
+set.seed(1618)
 M1<-matrix(c(0.75,0.2,0.05,
              0.05,0.8,0.15,
              0, 0,1),nrow=3,byrow=TRUE)
@@ -188,7 +200,7 @@ for(i in 1:steps){
     w[2]=1-w[1]-(stepsize*(j-1))
     w[3]=1-w[1]-w[2]
     print(w)
-    M1.BS=BSCIforMarkovCpp(M1=M1,S.all=c(1,2,3),w=w,returnBS=T, Counts=Counts)
+    M1.BS=BSCIforMarkov(M1=M1,S.all=c(1,2,3),w=w,returnBS=T, Counts=Counts)
     ICER.dist=apply(M1.BS,1,ICER)
     varICER[i,j]=var(ICER.dist)
   }
@@ -199,9 +211,6 @@ plot(x=c(0,stepsize,2*stepsize,3*stepsize,4*stepsize),y=varICER[5,1:5],ylim=c(0,
 for(i in 5:steps){
   lines(x=seq(0,stepsize*(i-1),stepsize),y=varICER[i,(1:i)],col="blue",type='l')
 }
-# for(i in 1:steps){
-#   lines(x=seq(0,stepsize*(i-1),stepsize),y=varICER[i,(1:i)],col="blue",type='l')
-# }
 
 
 

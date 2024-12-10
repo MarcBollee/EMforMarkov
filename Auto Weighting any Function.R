@@ -1,4 +1,4 @@
-GEMforMarkov6AutoW2<-function(Onesteps=list(), Twosteps=list(), Threesteps=list(), #list of matrices for the one and two-step transition counts all of the same square dimension
+AutoWforMarkov<-function(Onesteps=list(), Twosteps=list(), Threesteps=list(), #list of matrices for the one and two-step transition counts all of the same square dimension
                              w, Counts,
                              Forbidden,          #matrix of forbidden transitions
                              precision=0.01, maxiteration=20, BSsamples=5000,
@@ -104,10 +104,10 @@ GEMforMarkov6AutoW2<-function(Onesteps=list(), Twosteps=list(), Threesteps=list(
   
   if(missing(w)){w<-rep(1/n,n)}
   if(missing(Counts)){Counts<-matrix(c(TotalOnestepsRowSums,TotalTwostepsRowSums,TotalThreestepsRowSums),length(S.all),n)}
-  M1<-GEMforMarkov7(list(TotalOnesteps,TotalTwosteps,TotalThreesteps),S.all = c(1,2,3),w=w)
+  M1<-EMforMarkov(list(TotalOnesteps,TotalTwosteps,TotalThreesteps),S.all = c(1,2,3),w=w)
   
   ################################################################## Finding Optimal Weight
-  M1.BS<-BSCIforMarkovCpp(M1=M1,S.all=c(1,2,3),returnBS=T,w=w, BSsamples=BSsamples, Counts=Counts)
+  M1.BS<-BSCIforMarkov(M1=M1,S.all=c(1,2,3),returnBS=T,w=w, BSsamples=BSsamples, Counts=Counts)
   Obj<-rep(0,BSsamples)
   Obj=apply(M1.BS, MARGIN = 1, ObjFunc)
   VarObj<-var(Obj)
@@ -117,7 +117,7 @@ GEMforMarkov6AutoW2<-function(Onesteps=list(), Twosteps=list(), Threesteps=list(
   step<-0.1
   while(step>=precision){
     #Recompute M1 with new weight
-    M1<-GEMforMarkov7(list(TotalOnesteps,TotalTwosteps,TotalThreesteps),S.all = c(1,2,3),w=w)
+    M1<-EMforMarkov(list(TotalOnesteps,TotalTwosteps,TotalThreesteps),S.all = c(1,2,3),w=w)
     
     #Propose changes to the weight set
     Testw.north<-w+c(step,-step/2,-step/2)
@@ -128,32 +128,32 @@ GEMforMarkov6AutoW2<-function(Onesteps=list(), Twosteps=list(), Threesteps=list(
     #Store proposed weights in a list
     Testw<-list(Testw.north, Testw.south, Testw.east, Testw.west)
     
-    #Sample a random integer to set as seed s.t. all bootstraps generate the same bootstrap data
+    #Sample a random integer to set as seed such that all bootstraps iterations generate the same bootstrap data and all weights have equal match-up
     seed=sample(1:1000000,1)
     
     #Compute the bootstrapped var of the Objective function given for each proposed weight
     set.seed(seed)
-    M1.BS<-BSCIforMarkovCpp(M1=M1,S.all=c(1,2,3),BSsamples=BSsamples,returnBS=T,w=Testw.north, Counts=Counts)
+    M1.BS<-BSCIforMarkov(M1=M1,S.all=c(1,2,3),BSsamples=BSsamples,returnBS=T,w=Testw.north, Counts=Counts)
     Obj=apply(M1.BS, MARGIN = 1, ObjFunc)
     VarObj.north<-var(Obj)
     
     set.seed(seed)
-    M1.BS<-BSCIforMarkovCpp(M1=M1,S.all=c(1,2,3),BSsamples=BSsamples,returnBS=T,w=Testw.south, Counts=Counts)
+    M1.BS<-BSCIforMarkov(M1=M1,S.all=c(1,2,3),BSsamples=BSsamples,returnBS=T,w=Testw.south, Counts=Counts)
     Obj=apply(M1.BS, MARGIN = 1, ObjFunc)
     VarObj.south<-var(Obj)
     
     set.seed(seed)
-    M1.BS<-BSCIforMarkovCpp(M1=M1,S.all=c(1,2,3),BSsamples=BSsamples,returnBS=T,w=Testw.east, Counts=Counts)
+    M1.BS<-BSCIforMarkov(M1=M1,S.all=c(1,2,3),BSsamples=BSsamples,returnBS=T,w=Testw.east, Counts=Counts)
     Obj=apply(M1.BS, MARGIN = 1, ObjFunc)
     VarObj.east<-var(Obj)
     
     set.seed(seed)
-    M1.BS<-BSCIforMarkovCpp(M1=M1,S.all=c(1,2,3),BSsamples=BSsamples,returnBS=T,w=Testw.west, Counts=Counts)
+    M1.BS<-BSCIforMarkov(M1=M1,S.all=c(1,2,3),BSsamples=BSsamples,returnBS=T,w=Testw.west, Counts=Counts)
     Obj=apply(M1.BS, MARGIN = 1, ObjFunc)
     VarObj.west<-var(Obj)
     
     set.seed(seed)
-    M1.BS<-BSCIforMarkovCpp(M1=M1,S.all=c(1,2,3),BSsamples=BSsamples,returnBS=T,w=w, Counts=Counts)
+    M1.BS<-BSCIforMarkov(M1=M1,S.all=c(1,2,3),BSsamples=BSsamples,returnBS=T,w=w, Counts=Counts)
     Obj=apply(M1.BS, MARGIN = 1, ObjFunc)
     VarObj<-var(Obj)
     
