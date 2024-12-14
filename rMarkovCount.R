@@ -8,7 +8,7 @@ rMarkovCount<-function(M,s,rowTotals){
   return(C)
 }
 
-#OLD DEPRICATED VERSION FOR TESTING
+#OLD DEPRICATED VERSION FOR TESTING (Please remove this)
 # rMarkovCount<-function(M,s,rowTotals){
 #   n<-nrow(M)
 #   C<-matrix(0,n,n)
